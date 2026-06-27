@@ -1,0 +1,55 @@
+ [
+  {
+    "id": 1,
+
+    "text": "dilema",
+
+    "optA": {
+      "text": "Escucharlo",
+
+      "effect": { "religion": 10, "people": 5, "military": 0, "treasury": -5 }
+    },
+
+    "optB": {
+      "text": "Encarcelarlo",
+
+      "effect": { "religion": -10, "people": -5, "military": 5, "treasury": 0 }
+    }
+  },
+
+  {
+    "id": 2,
+
+    "text": "dilema",
+
+    "optA": {
+      "text": "Escucharlo",
+
+      "effect": { "religion": 10, "people": 5, "military": 0, "treasury": -5 }
+    },
+
+    "optB": {
+      "text": "Encarcelarlo",
+
+      "effect": { "religion": -10, "people": -5, "military": 5, "treasury": 0 }
+    }
+  },
+
+  {
+    "id": 3,
+
+    "text": "dilema",
+
+    "optA": {
+      "text": "Escucharlo",
+
+      "effect": { "religion": 10, "people": 5, "military": 0, "treasury": -5 }
+    },
+
+    "optB": {
+      "text": "Encarcelarlo",
+
+      "effect": { "religion": -10, "people": -5, "military": 5, "treasury": 0 }
+    }
+  }
+];

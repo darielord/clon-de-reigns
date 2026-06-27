@@ -1,62 +1,10 @@
-import { useState } from "react";
-
-export const crisisDeck = [
-  {
-    id: 1,
-
-    text: "dilema",
-
-    optA: {
-      text: "Escucharlo",
-
-      effect: { religion: 10, people: 5, military: 0, treasury: -5 },
-    },
-
-    optB: {
-      text: "Encarcelarlo",
-
-      effect: { religion: -10, people: -5, military: 5, treasury: 0 },
-    },
-  },
-
-  {
-    id: 2,
-
-    text: "dilema",
-
-    optA: {
-      text: "Escucharlo",
-
-      effect: { religion: 10, people: 5, military: 0, treasury: -5 },
-    },
-
-    optB: {
-      text: "Encarcelarlo",
-
-      effect: { religion: -10, people: -5, military: 5, treasury: 0 },
-    },
-  },
-
-  {
-    id: 3,
-
-    text: "dilema",
-
-    optA: {
-      text: "Escucharlo",
-
-      effect: { religion: 10, people: 5, military: 0, treasury: -5 },
-    },
-
-    optB: {
-      text: "Encarcelarlo",
-
-      effect: { religion: -10, people: -5, military: 5, treasury: 0 },
-    },
-  },
-];
+import { useState, useEffect } from "react";
 
 function juegoReigns() {
+  const [deck, setDeck] = useState([]);
+
+  const [loading, setLoading] = useState(true);
+
   const [resources, setResources] = useState({
     religion: 50,
 
@@ -69,6 +17,18 @@ function juegoReigns() {
 
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
 
+  useEffect(() => {
+    async function cargarDatos() {
+      const respuesta = await fetch("/cards.json");
+
+      const datos = await respuesta.json();
+
+      setDeck(datos);
+      setLoading(false);
+    }
+    cargarDatos();
+  }, []);
+
   const esCero =
     resources.religion === 0 ||
     resources.religion === 100 ||
@@ -79,7 +39,11 @@ function juegoReigns() {
     resources.treasury === 0 ||
     resources.treasury === 100;
 
-  const esMazo = currentCardIndex === crisisDeck.length;
+  const esMazo = currentCardIndex === deck.length;
+
+  if (loading) {
+    return <h1>Cargando Base de Datos Mental...</h1>;
+  }
 
   if (esCero) {
     return <h1>Game Over: Perdiste el control de tu reino.</h1>;
@@ -90,7 +54,7 @@ function juegoReigns() {
   }
 
   function elegirIzquierda() {
-    const card = crisisDeck[currentCardIndex];
+    const card = deck[currentCardIndex];
     const effect = card.optA.effect;
 
     setResources({
@@ -102,7 +66,7 @@ function juegoReigns() {
     setCurrentCardIndex(currentCardIndex + 1);
   }
   function elegirDerecha() {
-    const card = crisisDeck[currentCardIndex];
+    const card = deck[currentCardIndex];
     const effect = card.optB.effect;
 
     setResources({
@@ -125,14 +89,14 @@ function juegoReigns() {
 
       <h3> Carta Activa: </h3>
 
-      <p>{crisisDeck[currentCardIndex].text}</p>
+      <p>{deck[currentCardIndex].text}</p>
 
       <button onClick={elegirIzquierda}>
-        {crisisDeck[currentCardIndex].optA.text}{" "}
+        {deck[currentCardIndex].optA.text}{" "}
       </button>
 
       <button onClick={elegirDerecha}>
-        {crisisDeck[currentCardIndex].optB.text}{" "}
+        {deck[currentCardIndex].optB.text}{" "}
       </button>
     </div>
   );
