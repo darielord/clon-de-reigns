@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { useSpring, animated, to } from "react-spring";
+import { useDrag } from "@use-gesture/react";
 
 function juegoReigns() {
   const [deck, setDeck] = useState([]);
@@ -16,6 +18,43 @@ function juegoReigns() {
   });
 
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
+
+  const [{ x, y, rot }, api] = useSpring(() => ({
+    x: 0,
+    y: 0,
+    rot: 0,
+    config: {
+      tension: 300,
+      friction: 20,
+    },
+  }));
+
+  const bind = useDrag(({ down, movement: [mx, my] }) => {
+    if (down) {
+      api.start({
+        x: down ? mx : 0,
+        y: down ? my : 0,
+        rot: down ? mx / 10 : 0,
+      });
+    } else {
+      if (mx > 150) {
+        api.start({ x: 500, rot: 30 });
+        setTimeout(() => {
+          elegirDerecha();
+          api.start({ x: 0, y: 0, rot: 0, immediate: true });
+        }, 200);
+      } else if (mx < -150) {
+        api.start({ x: -500, rot: -30 });
+
+        setTimeout(() => {
+          elegirIzquierda();
+          api.start({ x: 0, y: 0, rot: 0, immediate: true });
+        }, 200);
+      } else {
+        api.start({ x: 0, y: 0, rot: 0 });
+      }
+    }
+  });
 
   useEffect(() => {
     async function cargarDatos() {
@@ -50,7 +89,7 @@ function juegoReigns() {
   }
 
   if (esMazo) {
-    return <h1>Victoria</h1>;
+    return <h1>¡VICTORIA!</h1>;
   }
 
   function elegirIzquierda() {
@@ -79,25 +118,58 @@ function juegoReigns() {
   }
 
   return (
-    <div style={{ border: "1px solid black", padding: "20px" }}>
-      <h3>Recursos:</h3>
+    <div className="pantalla-juego">
+      {/* 1. SECCIÓN SUPERIOR: RECURSOS */}
+      <div className="hud-recursos">
+        <h3>Recursos:</h3>
+        <p>
+          Religion: {resources.religion} | People: {resources.people} |
+          Military: {resources.military} | Treasury: {resources.treasury}
+        </p>
+      </div>
 
-      <p>
-        Religion: {resources.religion} | People: {resources.people} | Military:
-        {resources.military}| Treasury:{resources.treasury}
-      </p>
+      {/* 2. SECCIÓN CENTRAL: LA CARTA */}
+      <div className="zona-interactiva">
+        <h3>Carta Activa:</h3>
+        <animated.div
+          {...bind()}
+          style={{
+            userSelect: "none",
+            background: "#2a2a2a" /* Color oscuro de celda mental */,
+            color: "#ffffff",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: "280px",
+            height: "380px",
+            borderRadius: "16px",
+            boxShadow: "0px 10px 25px rgba(0,0,0,0.5)",
+            padding: "20px",
+            cursor: "grab",
+            touchAction: "none",
+            textAlign: "center",
+            transform: to(
+              [x, y, rot],
+              (x, y, rot) =>
+                `translate3d(${x}px, ${y}px, 0px) rotate(${rot}deg)`,
+            ),
+          }}
+        >
+          <p style={{ fontSize: "1.1rem", fontWeight: "bold" }}>
+            {deck[currentCardIndex].text}
+          </p>
+        </animated.div>
+      </div>
 
-      <h3> Carta Activa: </h3>
-
-      <p>{deck[currentCardIndex].text}</p>
-
-      <button onClick={elegirIzquierda}>
-        {deck[currentCardIndex].optA.text}{" "}
-      </button>
-
-      <button onClick={elegirDerecha}>
-        {deck[currentCardIndex].optB.text}{" "}
-      </button>
+      {/* 3. SECCIÓN INFERIOR: BOTONES */}
+      <div className="consola-botones">
+        <button onClick={elegirIzquierda}>
+          {deck[currentCardIndex].optA.text}
+        </button>
+        <button onClick={elegirDerecha}>
+          {deck[currentCardIndex].optB.text}
+        </button>
+      </div>
     </div>
   );
 }

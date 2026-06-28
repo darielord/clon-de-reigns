@@ -1,1 +1,78 @@
- import {useState} from 'react'
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  min-height: 100vh;
+  background-color: #121212;
+  box-sizing: border-box;
+  overflow-x: hidden; /* Corta por completo el scroll horizontal */
+}
+
+/* Aplica box-sizing a absolutamente todo en el proyecto */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* Distribuye las 3 zonas de forma equilibrada en vertical */
+.pantalla-juego {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #121212;
+  color: #ffffff;
+  font-family: "Courier New", Courier, monospace; /* Vibra retro/misterio */
+  padding: 30px 20px;
+  box-sizing: border-box;
+}
+
+/* El cuadro de arriba */
+.hud-recursos {
+  text-align: center;
+  border: 1px solid #333;
+  background-color: #1a1a1a;
+  padding: 10px 30px;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 500px;
+}
+
+/* Centrado perfecto de la carta */
+.zona-interactiva {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  flex-grow: 1;
+  gap: 15px;
+}
+
+/* Espaciado de botones abajo */
+.consola-botones {
+  display: flex;
+  gap: 20px;
+  width: 100%;
+  justify-content: center;
+}
+
+.consola-botones button {
+  background-color: #222;
+  color: #aaa;
+  border: 1px solid #444;
+  padding: 12px 24px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.2s ease;
+}
+
+.consola-botones button:hover {
+  background-color: #fff;
+  color: #000;
+  border-color: #fff;
+}
