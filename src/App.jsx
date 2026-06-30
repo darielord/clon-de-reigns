@@ -148,15 +148,7 @@ function juegoReigns() {
 
   function reiniciarJuego() {
     setCurrentCardIndex(0);
-    setResources({
-      religion: 50,
-
-      people: 50,
-
-      military: 50,
-
-      treasury: 50,
-    });
+    setResources(TRANSFONDOS_CONFIG[transfondo]);
   }
 
   if (loading) {
