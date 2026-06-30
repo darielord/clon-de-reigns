@@ -1,6 +1,31 @@
 import { useState, useEffect, useRef } from "react";
 import { useSpring, animated, to } from "react-spring";
 import { useDrag } from "@use-gesture/react";
+const TRANSFONDOS_CONFIG = {
+  paranoico: {
+    religion: 30,
+
+    people: 50,
+
+    military: 70,
+
+    treasury: 50,
+  },
+  salvador: {
+    religion: 30,
+
+    people: 70,
+
+    military: 70,
+
+    treasury: 25,
+  },
+};
+
+function verificarDerrota(resources) {
+  const valores = Object.values(resources);
+  return valores.some((valor) => valor <= 0 || valor >= 100);
+}
 
 function juegoReigns() {
   const [menu, setMenu] = useState(false);
@@ -9,34 +34,15 @@ function juegoReigns() {
 
   const [transfondo, setTransfondo] = useState("paranoico");
 
+  const juegoStorage = localStorage.getItem("objetoRecursos");
+  const juegoStorageParsiado = juegoStorage ? JSON.parse(juegoStorage) : null;
+
   function iniciarPartida() {
     if (playerName.trim() === "") {
       alert("¡Firma el registro, recluso!");
       return;
     }
-    if (transfondo === "paranoico") {
-      setResources({
-        religion: 30,
-
-        people: 50,
-
-        military: 70,
-
-        treasury: 50,
-      });
-    }
-
-    if (transfondo === "salvador") {
-      setResources({
-        religion: 30,
-
-        people: 70,
-
-        military: 70,
-
-        treasury: 25,
-      });
-    }
+    setResources(TRANSFONDOS_CONFIG[transfondo]);
     setMenu(true);
   }
 
@@ -46,12 +52,9 @@ function juegoReigns() {
 
   const audioDeslizar = useRef(new Audio("slideCard.mp3"));
 
-  const [resources, setResources] = useState(() => {
-    const recursosGuardados = localStorage.getItem("recursos_reigns");
-    if (recursosGuardados) {
-      return JSON.parse(recursosGuardados);
-    } else {
-      return {
+  const [resources, setResources] = useState(
+    () =>
+      (juegoStorageParsiado || {}).resources || {
         religion: 50,
 
         people: 50,
@@ -59,23 +62,20 @@ function juegoReigns() {
         military: 50,
 
         treasury: 50,
-      };
-    }
-  });
+      },
+  );
 
-  const [currentCardIndex, setCurrentCardIndex] = useState(() => {
-    const indiceGuardado = localStorage.getItem("indice_reigns");
-
-    if (indiceGuardado) {
-      return Number(indiceGuardado);
-    } else {
-      return 0;
-    }
-  });
+  const [currentCardIndex, setCurrentCardIndex] = useState(
+    () => (juegoStorageParsiado || {}).currentCardIndex || 0,
+  );
 
   useEffect(() => {
-    localStorage.setItem("indice_reigns", currentCardIndex);
-    localStorage.setItem("recursos_reigns", JSON.stringify(resources));
+    const objetoRecursos = {
+      resources,
+      currentCardIndex,
+    };
+
+    localStorage.setItem("objetoRecursos", JSON.stringify(objetoRecursos));
   }, [resources, currentCardIndex]);
 
   const [{ x, y, rot }, api] = useSpring(() => ({
@@ -99,14 +99,14 @@ function juegoReigns() {
       if (mx > 150) {
         api.start({ x: 500, rot: 30 });
         setTimeout(() => {
-          elegirDerecha();
+          selecionarOpcion("optB");
           api.start({ x: 0, y: 0, rot: 0, immediate: true });
         }, 200);
       } else if (mx < -150) {
         api.start({ x: -500, rot: -30 });
 
         setTimeout(() => {
-          elegirIzquierda();
+          selecionarOpcion("optA");
           api.start({ x: 0, y: 0, rot: 0, immediate: true });
         }, 200);
       } else {
@@ -114,6 +114,21 @@ function juegoReigns() {
       }
     }
   });
+
+  function ejecutarTurno(effect) {
+    const card = deck[currentCardIndex];
+
+    setResources({
+      religion: resources.religion + effect.religion,
+      people: resources.people + effect.people,
+      military: resources.military + effect.military,
+      treasury: resources.treasury + effect.treasury,
+    });
+
+    audioDeslizar.current.currentTime = 0;
+    audioDeslizar.current.play();
+    setCurrentCardIndex(currentCardIndex + 1);
+  }
 
   useEffect(() => {
     async function cargarDatos() {
@@ -127,15 +142,7 @@ function juegoReigns() {
     cargarDatos();
   }, []);
 
-  const esCero =
-    resources.religion === 0 ||
-    resources.religion === 100 ||
-    resources.people === 0 ||
-    resources.people === 100 ||
-    resources.military === 0 ||
-    resources.military === 100 ||
-    resources.treasury === 0 ||
-    resources.treasury === 100;
+  const esCero = verificarDerrota(resources);
 
   const esMazo = currentCardIndex === deck.length;
 
@@ -235,33 +242,10 @@ function juegoReigns() {
     );
   }
 
-  function elegirIzquierda() {
+  function selecionarOpcion(letra) {
     const card = deck[currentCardIndex];
-    const effect = card.optA.effect;
-
-    setResources({
-      religion: resources.religion + effect.religion,
-      people: resources.people + effect.people,
-      military: resources.military + effect.military,
-      treasury: resources.treasury + effect.treasury,
-    });
-    audioDeslizar.current.currentTime = 0;
-    audioDeslizar.current.play();
-    setCurrentCardIndex(currentCardIndex + 1);
-  }
-  function elegirDerecha() {
-    const card = deck[currentCardIndex];
-    const effect = card.optB.effect;
-
-    setResources({
-      religion: resources.religion + effect.religion,
-      people: resources.people + effect.people,
-      military: resources.military + effect.military,
-      treasury: resources.treasury + effect.treasury,
-    });
-    audioDeslizar.current.currentTime = 0;
-    audioDeslizar.current.play();
-    setCurrentCardIndex(currentCardIndex + 1);
+    const effect = card[letra].effect;
+    ejecutarTurno(effect);
   }
 
   if (menu) {
@@ -312,10 +296,10 @@ function juegoReigns() {
 
         {/* 3. SECCIÓN INFERIOR: BOTONES */}
         <div className="consola-botones">
-          <button onClick={elegirIzquierda}>
+          <button onClick={() => selecionarOpcion("optA")}>
             {deck[currentCardIndex].optA.text}
           </button>
-          <button onClick={elegirDerecha}>
+          <button onClick={() => selecionarOpcion("optB")}>
             {deck[currentCardIndex].optB.text}
           </button>
         </div>
